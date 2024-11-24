@@ -224,7 +224,7 @@ export function RegisterPageComponent() {
               href="/login"
               className="font-medium text-primary hover:underline"
             >
-              Sign in
+              Login
             </a>
           </p>
         </CardFooter>

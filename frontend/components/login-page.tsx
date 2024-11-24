@@ -77,8 +77,8 @@ export function LoginPageComponent() {
         <CardFooter>
           <p className="text-center text-sm text-gray-600 mt-2">
             Don&apos;t have an account?{' '}
-            <a href="/signin" className="font-medium text-primary hover:underline">
-              Sign up
+            <a href="/register" className="font-medium text-primary hover:underline">
+              Register
             </a>
           </p>
         </CardFooter>
