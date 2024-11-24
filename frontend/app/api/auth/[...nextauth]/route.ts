@@ -6,12 +6,11 @@ const handler = NextAuth({
     CredentialsProvider({
         name: 'Credentials',
         credentials: {
-          fullname : { label: 'fullname', type: 'text', placeholder: ''},
           email: { label: 'email', type: 'text', placeholder: '' },
           password: { label: 'password', type: 'password', placeholder: '' },
         },
         //@typescript-eslint/no-unused-vars
-        async authorize(credentials: Record<"email" | "password" | "fullname", string> | undefined) {
+        async authorize(credentials: Record<"email" | "password" , string> | undefined) {
           if (!credentials?.email || !credentials?.password) {
             throw new Error('Please provide both email and password')
           }
@@ -48,7 +47,7 @@ const handler = NextAuth({
   ],
   secret: process.env.NEXTAUTH_SECRET || "SEC3RT",
   pages: {
-    signIn : '/signin'
+    signIn : '/login'
   }
 })
 

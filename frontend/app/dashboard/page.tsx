@@ -1,12 +1,12 @@
 "use client"
 
-import { NexpadFrontPage } from '@/components/nexpad-front-page'
+import { CanvasSyncFrontPage } from '@/components/canvasSync-front-page'
 
-export default function NexPadFrontPage() {
+export default function Dashboard() {
 
   return (
     <>
-    <NexpadFrontPage />
+    <CanvasSyncFrontPage />
     </>
   )
 }
