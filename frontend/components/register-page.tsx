@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { signup } from "@/app/lib/register";
 import {
   Card,
   CardContent,
@@ -41,9 +42,12 @@ export function RegisterPageComponent() {
       alert("You must accept the terms and conditions.");
       return;
     }
-  
+
     // Handle successful registration logic
-    console.log('Registration successful with:', { name, email, password });
+
+    signup(name, email, password);
+
+    console.log("Registration successful with:", { name, email, password });
   };
 
   const isValidEmail = (email: string): boolean => {
@@ -109,6 +113,7 @@ export function RegisterPageComponent() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={sendOtp}
                 />
               </div>
             </div>
@@ -144,50 +149,50 @@ export function RegisterPageComponent() {
             )}
             {otpVeri ? (
               <>
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  id="name"
-                  placeholder="John Doe"
-                  className="pl-10"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  id="password"
-                  type="password"
-                  className="pl-10"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <ShieldCheck className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  className="pl-10"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            </>
-            ): (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Input
+                      id="name"
+                      placeholder="John Doe"
+                      className="pl-10"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Input
+                      id="password"
+                      type="password"
+                      className="pl-10"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      className="pl-10"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
               <p className="text-sm text-gray-600 mt-2">
                 Please verify your email to set your name and password.
               </p>
@@ -227,6 +232,11 @@ export function RegisterPageComponent() {
               Login
             </a>
           </p>
+          {sendOtp && <p className="text-end text-sm text-gray-600 mt-2 ml-auto">
+            <a href="/register" className="font-medium text-primary hover:underline">
+              Change Email
+            </a>
+          </p>}
         </CardFooter>
       </Card>
     </div>
