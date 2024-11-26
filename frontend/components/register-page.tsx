@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ArrowRight, User, Mail, Lock, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function RegisterPageComponent() {
   const [name, setName] = useState("");
@@ -26,8 +27,55 @@ export function RegisterPageComponent() {
   const [enteredOtp, setEnteredOtp] = useState("");
   const [sendOtp, setSendOtp] = useState(false);
   const [otpVeri, setOtpVeri] = useState(false);
+  const [canResend, setCanResend] = useState(false);
+  
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+  
+  const verifyCall = async () => {
+    if (!isValidEmail(email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    const generatedOtp = Math.floor(1000 + Math.random() * 9000);
+    setOtp(generatedOtp);
+    setCanResend(false);
+
+    const response = await fetch("/api/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp: generatedOtp }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      alert(result.message);
+      setSendOtp(true);
+    } else {
+      alert(result.message);
+    }
+  };
+  
+  const debounce = <T extends (...args: unknown[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void => {
+    let timer: NodeJS.Timeout;
+    return (...args: Parameters<T>) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+  
+
+  const debouncedVerifyCall = useCallback(
+    debounce(verifyCall, 500),
+    [email]
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!otpVeri) {
@@ -45,39 +93,15 @@ export function RegisterPageComponent() {
 
     // Handle successful registration logic
 
-    signup(name, email, password);
-
+    const response = await signup(name, email, password);
+    if (response == "Signed up!") {
+      router.push("/dashboard");
+    }
+    alert(response);
     console.log("Registration successful with:", { name, email, password });
   };
 
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
-  const verifyCall = async () => {
-    if (!isValidEmail(email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-
-    const generatedOtp = Math.floor(1000 + Math.random() * 9000);
-    setOtp(generatedOtp);
-
-    const response = await fetch("/api/send-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp: generatedOtp }),
-    });
-
-    const result = await response.json();
-    if (result.success) {
-      alert(result.message);
-      setSendOtp(true);
-    } else {
-      alert(result.message);
-    }
-  };
 
   const handleOtpVerification = () => {
     if (parseInt(enteredOtp) === otp) {
@@ -87,6 +111,13 @@ export function RegisterPageComponent() {
       alert("Invalid OTP. Please try again.");
     }
   };
+
+  useEffect(() => {
+    if (sendOtp) {
+      const timer = setTimeout(() => setCanResend(true), 60000); // 60 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [sendOtp]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 p-4">
@@ -118,13 +149,22 @@ export function RegisterPageComponent() {
               </div>
             </div>
             <Button
-              onClick={verifyCall}
+              onClick={debouncedVerifyCall}
               type="button"
               className=" w-full group"
-              disabled={!email || !isValidEmail(email)}
+              disabled={!email || !isValidEmail(email) || sendOtp}
             >
               Verify Email
             </Button>
+            <Button
+              onClick={debouncedVerifyCall}
+              type="button"
+              className="w-full"
+              disabled={!canResend}
+            >
+              Resend OTP
+            </Button>
+
             {sendOtp && !otpVeri && (
               <div className="space-y-2">
                 <Label htmlFor="otp">Enter OTP</Label>
@@ -232,11 +272,16 @@ export function RegisterPageComponent() {
               Login
             </a>
           </p>
-          {sendOtp && <p className="text-end text-sm text-gray-600 mt-2 ml-auto">
-            <a href="/register" className="font-medium text-primary hover:underline">
-              Change Email
-            </a>
-          </p>}
+          {sendOtp && (
+            <p className="text-end text-sm text-gray-600 mt-2 ml-auto">
+              <a
+                href="/register"
+                className="font-medium text-primary hover:underline"
+              >
+                Change Email
+              </a>
+            </p>
+          )}
         </CardFooter>
       </Card>
     </div>
