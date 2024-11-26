@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { signup } from "@/app/lib/register";
+import { signup } from "@/app/lib/actions/register";
 import {
   Card,
   CardContent,
@@ -28,17 +28,20 @@ export function RegisterPageComponent() {
   const [sendOtp, setSendOtp] = useState(false);
   const [otpVeri, setOtpVeri] = useState(false);
   const [canResend, setCanResend] = useState(false);
-  
+  const [loading, setLoading] = useState(false);
+
   const router = useRouter();
 
   const isValidEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
-  
+
   const verifyCall = async () => {
+    setLoading(true);
     if (!isValidEmail(email)) {
       alert("Please enter a valid email address.");
+      setLoading(false);
       return;
     }
 
@@ -56,24 +59,25 @@ export function RegisterPageComponent() {
     if (result.success) {
       alert(result.message);
       setSendOtp(true);
+      setLoading(false);
     } else {
       alert(result.message);
+      setLoading(false);
     }
   };
-  
-  const debounce = <T extends (...args: unknown[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void => {
+
+  const debounce = <T extends (...args: unknown[]) => void>(
+    func: T,
+    delay: number
+  ): ((...args: Parameters<T>) => void) => {
     let timer: NodeJS.Timeout;
     return (...args: Parameters<T>) => {
       clearTimeout(timer);
       timer = setTimeout(() => func(...args), delay);
     };
   };
-  
 
-  const debouncedVerifyCall = useCallback(
-    debounce(verifyCall, 500),
-    [email]
-  );
+  const debouncedVerifyCall = useCallback(debounce(verifyCall, 500), [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,8 +105,6 @@ export function RegisterPageComponent() {
     console.log("Registration successful with:", { name, email, password });
   };
 
-
-
   const handleOtpVerification = () => {
     if (parseInt(enteredOtp) === otp) {
       setOtpVeri(true);
@@ -120,8 +122,121 @@ export function RegisterPageComponent() {
   }, [sendOtp]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 p-4">
+      {loading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm pointer-events-auto">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 400 400"
+            className="w-40 h-40"
+          >
+            <defs>
+              <radialGradient id="outer-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#4e9eff" stop-opacity="0.8" />
+                <stop offset="70%" stop-color="#0040ff" stop-opacity="0.5" />
+                <stop offset="100%" stop-color="transparent" />
+              </radialGradient>
+              <linearGradient
+                id="ring-gradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop offset="0%" stop-color="#00f0ff" />
+                <stop offset="100%" stop-color="#0040ff" />
+              </linearGradient>
+            </defs>
+            <circle
+              cx="200"
+              cy="200"
+              r="170"
+              fill="none"
+              stroke="url(#outer-glow)"
+              stroke-width="20"
+              opacity="0.7"
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 200 200"
+                to="360 200 200"
+                dur="4s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle
+              cx="200"
+              cy="200"
+              r="150"
+              fill="none"
+              stroke="url(#ring-gradient)"
+              stroke-width="12"
+              stroke-dasharray="942"
+              stroke-dashoffset="0"
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 200 200"
+                to="-360 200 200"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="stroke-dashoffset"
+                from="0"
+                to="942"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle
+              cx="200"
+              cy="200"
+              r="100"
+              fill="none"
+              stroke="#0ff"
+              stroke-width="10"
+              stroke-opacity="0.6"
+              stroke-dasharray="628"
+              stroke-dashoffset="0"
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 200 200"
+                to="360 200 200"
+                dur="2.5s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="stroke-opacity"
+                values="0.4;0.8;0.4"
+                dur="2s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle cx="200" cy="200" r="15" fill="#0ff" opacity="0.8">
+              <animate
+                attributeName="r"
+                values="12;20;12"
+                dur="2s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="opacity"
+                values="0.6;1;0.6"
+                dur="2s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </svg>
+        </div>
+      )}
+      <Card
+        className={`w-full max-w-md ${loading ? "pointer-events-none" : ""}`}
+      >
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
             Create an account
@@ -164,7 +279,6 @@ export function RegisterPageComponent() {
             >
               Resend OTP
             </Button>
-
             {sendOtp && !otpVeri && (
               <div className="space-y-2">
                 <Label htmlFor="otp">Enter OTP</Label>
