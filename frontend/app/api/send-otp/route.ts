@@ -3,8 +3,8 @@ import { sendMail } from '@/app/lib/actions/helper';
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, otp } = await req.json();
-    const response = await sendMail(email, otp);
+    const { email } = await req.json();
+    const response = await sendMail(email);
     return NextResponse.json({ success: true, message: response });
   } catch (error) {
     return NextResponse.json(

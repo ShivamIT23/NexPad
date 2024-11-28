@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { ArrowRight, User, Mail, Lock, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export function RegisterPageComponent() {
   const [name, setName] = useState("");
@@ -23,7 +24,6 @@ export function RegisterPageComponent() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [otp, setOtp] = useState(0);
   const [enteredOtp, setEnteredOtp] = useState("");
   const [sendOtp, setSendOtp] = useState(false);
   const [otpVeri, setOtpVeri] = useState(false);
@@ -45,14 +45,12 @@ export function RegisterPageComponent() {
       return;
     }
 
-    const generatedOtp = Math.floor(1000 + Math.random() * 9000);
-    setOtp(generatedOtp);
     setCanResend(false);
 
     const response = await fetch("/api/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp: generatedOtp }),
+      body: JSON.stringify({ email }),
     });
 
     const result = await response.json();
@@ -81,36 +79,73 @@ export function RegisterPageComponent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
     if (!otpVeri) {
       alert("Please verify your email before registering.");
+      setLoading(false);
       return;
     }
     if (password !== confirmPassword) {
       alert("Passwords do not match.");
+      setLoading(false);
       return;
     }
     if (!acceptTerms) {
       alert("You must accept the terms and conditions.");
+      setLoading(false);
       return;
     }
 
     // Handle successful registration logic
 
-    const response = await signup(name, email, password);
-    if (response == "Signed up!") {
-      router.push("/dashboard");
+    try {
+      const response = await signup(name, email, password);
+      setLoading(false);
+      if (response == "Signed up!") {
+        try {
+          const result = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+          });
+          if (result?.error) {
+            setLoading(false);
+            console.log(result.error);
+            alert("Registeration Done! Please Signin");
+            router.push("/login");
+          } else {
+            setLoading(false);
+            router.push("/dashboard");
+          }
+        } catch (err) {
+          console.log(err);
+          setLoading(false);
+          alert("Registeration Done! Please Signin");
+          router.push("/login");
+        }
+      }
+      alert(response);
+    } catch (err) {
+      setLoading(false);
+      console.log(err);
+      alert("Error while registeration");
     }
-    alert(response);
-    console.log("Registration successful with:", { name, email, password });
   };
 
-  const handleOtpVerification = () => {
-    if (parseInt(enteredOtp) === otp) {
+  const handleOtpVerification = async () => {
+    const response = await fetch("/api/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, enteredOtp }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      alert(result.message);
       setOtpVeri(true);
-      alert("OTP Verified!");
     } else {
-      alert("Invalid OTP. Please try again.");
+      alert(result.message);
     }
   };
 
