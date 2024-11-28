@@ -2,10 +2,12 @@
 import LogoSvg from "@/components/ui/LogoSVG";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { signIn, signOut, useSession } from "next-auth/react"
+import { useRouter } from "next/navigation";
+
 
 export default function Page() {
-  const session = useSession();
+
+  const router = useRouter();
 
   useGSAP(()=>{
     gsap.to(".logo-path", {
@@ -20,9 +22,11 @@ export default function Page() {
       duration: 0.6,
       ease: "linear",
       display: "none",
+      onComplete: () =>{
+        router.push("/dashboard")
+      }
     });
   })
-  console.log(session);
     return <div>
       <div
           style={{
@@ -33,8 +37,5 @@ export default function Page() {
         >
           <LogoSvg />
         </div>
-    <button onClick={() => signIn()}>Signin</button>
-    <button onClick={() => signOut()}>Sign out</button>
-    {JSON.stringify(session.data?.user)}
   </div>
 }
