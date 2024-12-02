@@ -116,7 +116,7 @@ export function CanvasSyncFrontPage() {
                   variant="outline"
                   className="w-1/2 mx-auto bg-green-400 text-gray-800 text-lg font-semibold my-auto scale-150"
                 >
-                  Create a Room
+                  <Link href={"/rooms/12"}>Create a Room</Link>
                 </Button>
                 <Button
                   variant="default"
