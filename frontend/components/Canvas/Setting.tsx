@@ -112,7 +112,7 @@ export default function Settings({ canvas }: { canvas: Canvas | null }) {
     <div
       className={`${
         selectedObject ? "fixed" : "hidden"
-      } right-4 top-1/2 scale-90 -translate-y-1/2 flex flex-col gap-2 py-6 px-4 bg-gray-800 text-white`}
+      } right-4 z-10 top-1/2 scale-90 -translate-y-1/2 flex flex-col gap-2 py-6 px-4 bg-gray-800 text-white`}
     >
       {selectedObject && (
         <>

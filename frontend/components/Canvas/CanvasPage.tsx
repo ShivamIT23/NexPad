@@ -1,20 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Canvas, Rect, Textbox, Circle, Line , CircleBrush , Triangle } from "fabric";
-import Settings from "./Setting";
-import ButtonTool from "../ToolBar/ButtonTool";
+import { Canvas, Line  } from "fabric";
 import CanvasSetting from "./CanvasSetting";
 import RecordIcon from "../ToolBar/RecordIcon";
 import StopIcon from "../ToolBar/StopIcon";
-import RectangleIcon from "../ToolBar/RectangleIcon";
-import CircleIcon from "../ToolBar/CircleIcon";
-import VideoIcon from "../ToolBar/VideoIcon";
 import { handleObjectMoving , clearGuidelines } from "@/lib/snappingHelper";
-import BrushIcon from "../ToolBar/BrushIcon";
-import TriangleIcon from "../ToolBar/TriangleIcon";
-import CursorIcon from "../ToolBar/CursorIcon";
-import TextIcon from "../ToolBar/TextIcon";
+import ToolBar from "./ToolBar";
 
 const CanvasPage = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -64,84 +56,12 @@ const CanvasPage = () => {
     }
   }, []);
 
-  const addRectangle = () => {
-    if (canvas) {
-      const rectangle = new Rect({
-        top: 100,
-        left: 50,
-        width: 100,
-        height: 60,
-        stroke: "#DB4D42",
-        strokeWidth:3,
-        fill: "#ffffff",
-      });
-      canvas.add(rectangle);
-    }
-  };
-
-  const addCircleBrush = () => {
-    if (canvas) {
-      canvas.freeDrawingBrush = new CircleBrush(canvas);
-      canvas.isDrawingMode = true;
-    }
-  };
-
-  const handleCursor = () => {
-    if (canvas) {
-      canvas.isDrawingMode = false;
-    }
-  };
-
-  const addCircle = () => {
-    if (canvas) {
-      const circle = new Circle({
-        top: 100,
-        left: 100,
-        radius: 60,
-        stroke: "#DB4D42",
-        strokeWidth:3,
-        fill: "#ffffff",
-      });
-      canvas.add(circle);
-    }
-  };
-
-  const addTriangle = () => {
-    if (canvas) {
-      const triangle = new Triangle({
-        top: 100,
-        left: 100,
-        radius: 60,
-        stroke: "#DB4D42",
-        strokeWidth:3,
-        fill: "#ffffff",
-      });
-      canvas.add(triangle);
-    }
-  };
-
-  const addText = () => {
-    if (canvas) {
-        const text = new Textbox("Text Here", {
-          left: 20,
-          top: 20,
-          fontSize: 24,
-          fill: "black",
-          editable: true,
-        });
-        canvas.add(text);
-        canvas.renderAll();
-    }
-  };
-
-  const showRecordingButton = () => {
-    setCanRecord((prev) => !prev);
-  };
-
+  
+  
   const handleStartRecording = () => {
     const stream = canvasRef.current?.captureStream();
     if (!stream) return;
-
+    
     if (mediaRecorderRef) {
       mediaRecorderRef.current = new MediaRecorder(stream, {
         mimeType: "video/webm; codecs=vp9",
@@ -149,49 +69,49 @@ const CanvasPage = () => {
       mediaRecorderRef.current.ondataavailable = handleDataAvailable;
       mediaRecorderRef.current.start();
       setIsRecording(true);
-
+      
       canvas?.getObjects().forEach((obj) => {
         obj.hasControls = false;
         obj.selectable = false;
       });
-
+      
       canvas?.renderAll();
-
+      
       setRecordingTime(0);
       recordingIntervalRef.current = setInterval(() => {
         setRecordingTime((prev) => prev + 1);
       }, 1000);
     }
   };
-
+  
   const handleStopRecording = () => {
     if (!mediaRecorderRef.current) return;
-
+    
     mediaRecorderRef.current.stop();
     setIsRecording(false);
-
+    
     canvas?.getObjects().forEach((obj) => {
       obj.hasControls = true;
     });
     canvas?.renderAll();
-
+    
     if (recordingIntervalRef.current) {
       clearInterval(recordingIntervalRef.current);
     }
   };
-
+  
   const handleDataAvailable = (event: BlobEvent) => {
     if (event.data.size > 0) {
       setRecordingChunks((prev) => [...prev, event.data]);
     }
   };
-
+  
   const handleExportVideo = () => {
     const blob = new Blob(recordingChunks, {
       type: "video/webm",
     });
     const url = URL.createObjectURL(blob);
-
+    
     const a = document.createElement("a");
     a.style.display = "none";
     a.href = url;
@@ -201,26 +121,11 @@ const CanvasPage = () => {
     URL.revokeObjectURL(url);
     setRecordingChunks([]);
   };
-
-  const tools = [
-    { label: "Text", icon: <TextIcon />, action: addText },
-    { label: "Cursor", icon: <CursorIcon />, action: handleCursor },
-    { label: "Brush", icon: <BrushIcon />, action: addCircleBrush },
-    { label: "Triangle", icon: <TriangleIcon />, action: addTriangle },
-    { label: "Rectangle", icon: <RectangleIcon />, action: addRectangle },
-    { label: "Circle", icon: <CircleIcon />, action: addCircle },
-    { label: "Record", icon: <VideoIcon />, action: showRecordingButton },
-  ];
-
+  
+  
   return (
     <div className="relative flex flex-col box-border items-center w-[98vw] h-[98vh] p-8">
-      <div className="fixed z-40 top-1/2 left-4 -translate-y-1/2 flex flex-col gap-2 p-2 border-r-4 border-gray-500">
-        {tools.map((tool) => (
-          <ButtonTool key={tool.label} onClick={tool.action}>
-            {tool.icon}
-          </ButtonTool>
-        ))}
-      </div>
+      <ToolBar canvas={canvas} setCanRecord={setCanRecord} />
       <div
         className={`${!canRecord ? "hidden" : "flex"} flex-col items-center`}
       >
@@ -276,7 +181,6 @@ const CanvasPage = () => {
         </button>
       </div>
       <canvas ref={canvasRef} className="border-2" />
-      <Settings canvas={canvas} />
       <CanvasSetting canvas={canvas} />
     </div>
   );
