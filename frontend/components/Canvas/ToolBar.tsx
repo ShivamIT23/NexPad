@@ -121,7 +121,7 @@ export default function ToolBar({
         fill: "black",
         editable: true,
       });
-      canvas.add(text);
+      canvas.add(text as unknown as FabricObject);
       canvas.renderAll();
     }
   };
