@@ -9,6 +9,20 @@ export default function CanvasSetting({ canvas }: { canvas: Canvas | null }) {
   const [canvasWidth, setCanvasWidth] = useState(500);
 
   useEffect(() => {
+    const handleResize = () => {
+      setCanvasWidth(window.innerWidth * 0.8);
+      setCanvasHeight(window.innerHeight * 0.8);
+    };
+
+    handleResize(); // Initial size
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
     if (canvas) {
       canvas.setDimensions({
         width: canvasWidth,
@@ -37,22 +51,20 @@ export default function CanvasSetting({ canvas }: { canvas: Canvas | null }) {
   };
 
   return (
-    <div className="absolute h-[100dvh]">
-      <div className="absolute right-1/2 bottom-10 scale-90 translate-x-1/2 flex flex-col gap-2 py-6 px-4 bg-gray-800 text-white">
-        {/* <div className="w-full flex justify-end overflow-hidden">
+    <div className="fixed -right-2 z-10 bottom-0 scale-90 flex flex-col py-6 px-4 bg-gray-800 text-white">
+      {/* <div className="w-full flex justify-end overflow-hidden">
              <div className="w-1/3 bg-gray-800 text-white text-center"> */}
-        <ToolInput
-          label="CanvasWidth"
-          value={canvasWidth}
-          onChange={handleWidthChange}
-        />
-        <ToolInput
-          label="CanvasHeight"
-          value={canvasHeight}
-          onChange={handleHeightChange}
-        />
-        {/* </div> */}
-      </div>
+      <ToolInput
+        label="CanvasWidth"
+        value={canvasWidth}
+        onChange={handleWidthChange}
+      />
+      <ToolInput
+        label="CanvasHeight"
+        value={canvasHeight}
+        onChange={handleHeightChange}
+      />
+      {/* </div> */}
     </div>
   );
 }

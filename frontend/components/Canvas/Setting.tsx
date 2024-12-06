@@ -1,6 +1,6 @@
 "use client";
 
-import { Canvas, FabricObject, Circle } from "fabric";
+import { Canvas, FabricObject, Circle, Triangle } from "fabric";
 import { useEffect, useState } from "react";
 import ToolInput from "../ToolBar/ToolInput";
 
@@ -16,6 +16,7 @@ export default function Settings({ canvas }: { canvas: Canvas | null }) {
   const handleObjectSelection = (object: FabricObject | null) => {
     if (!object) return;
 
+
     setSelectedObject(object);
 
     if (object.type === "rect") {
@@ -29,6 +30,12 @@ export default function Settings({ canvas }: { canvas: Canvas | null }) {
       setColor(circle.fill?.toString() || "");
       setWidth(0);
       setHeight(0);
+    } else if (object.type === "triangle") {
+      const triangle = object as Triangle;
+      setWidth(Math.round((triangle.width ?? 0) * (triangle.scaleX ?? 1)));
+      setHeight(Math.round((triangle.height ?? 0) * (triangle.scaleY ?? 1)));
+      setColor(triangle.fill?.toString() || "");
+      setDiameter(0);
     }
   };
 
@@ -83,6 +90,8 @@ export default function Settings({ canvas }: { canvas: Canvas | null }) {
     setWidth(value);
     if (selectedObject?.type === "rect" && value >= 0) {
       updateObject("width", value / (selectedObject.scaleX || 1));
+    } else if (selectedObject?.type === "triangle" && value >= 0) {
+      updateObject("width", value / (selectedObject.scaleX || 1));
     }
   };
 
@@ -90,6 +99,8 @@ export default function Settings({ canvas }: { canvas: Canvas | null }) {
     const value = parseInt(e.target.value, 10) || 0;
     setHeight(value);
     if (selectedObject?.type === "rect" && value >= 0) {
+      updateObject("height", value / (selectedObject.scaleY || 1));
+    } else if (selectedObject?.type === "triangle" && value >= 0) {
       updateObject("height", value / (selectedObject.scaleY || 1));
     }
   };
@@ -111,12 +122,12 @@ export default function Settings({ canvas }: { canvas: Canvas | null }) {
   return (
     <div
       className={`${
-        selectedObject ? "fixed" : "hidden"
-      } right-4 z-10 top-1/2 scale-90 -translate-y-1/2 flex flex-col gap-2 py-6 px-4 bg-gray-800 text-white`}
+        selectedObject ? "fixed flex" : "hidden"
+      } right-4 z-10 top-1/2 scale-90 -translate-y-1/2  flex-col gap-2 py-6 px-4 bg-gray-800 text-white`}
     >
       {selectedObject && (
         <>
-          {selectedObject.type === "rect" && (
+          {(selectedObject.type === "rect" || selectedObject.type === "triangle") && (
             <>
               <ToolInput
                 label="Width"

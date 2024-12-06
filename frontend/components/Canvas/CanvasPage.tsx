@@ -7,6 +7,9 @@ import RecordIcon from "../ToolBar/RecordIcon";
 import StopIcon from "../ToolBar/StopIcon";
 import { handleObjectMoving , clearGuidelines } from "@/lib/snappingHelper";
 import ToolBar from "./ToolBar";
+import CroppingSettings from "./CroppingSettings";
+import LayersList from "./LayersList";
+// import CroppingSettings from "./CroppingSettings";
 
 const CanvasPage = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -19,6 +22,7 @@ const CanvasPage = () => {
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [guidelines , setGuidelines] = useState<Line[]>([])
+  const [refreshKey , setRefreshKey] = useState(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -123,9 +127,10 @@ const CanvasPage = () => {
   };
   
   
+  
   return (
     <div className="relative flex flex-col box-border items-center w-[98vw] h-[98vh] p-8">
-      <ToolBar canvas={canvas} setCanRecord={setCanRecord} />
+      <ToolBar canvas={canvas} setCanRecord={setCanRecord} setRefreshKey={setRefreshKey} />
       <div
         className={`${!canRecord ? "hidden" : "flex"} flex-col items-center`}
       >
@@ -182,6 +187,8 @@ const CanvasPage = () => {
       </div>
       <canvas ref={canvasRef} className="border-2" />
       <CanvasSetting canvas={canvas} />
+      <CroppingSettings canvas={canvas} refreshKey={refreshKey} />
+      <LayersList canvas={canvas} />
     </div>
   );
 };
